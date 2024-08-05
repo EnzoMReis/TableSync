@@ -28,12 +28,19 @@ app.post('/produto', async (req,res)=>{
     }
 })
 
-app.delete('/fabricante/:param', async (req,res)=>{
-    const data = req.params.param
-    console.log(data)
-    console.log('-----------')
-    console.log(data.id)
-    res.status(200).json({message: 'dados recebidos'})
+app.delete('/fabricante/:id', async (req,res)=>{
+    const data = req.params
+    const pesq = await Fabricante.findByPk(data.id, {raw:true})
+    try{
+        if(pesq === null){
+            res.status(404).json({message: 'Fabricante não existente no Banco de Dados'}) 
+        }else {
+            await Fabricante.destroy({where: {codFabricante: data.id}})
+            res.status(200).json({message: 'Fabricante Excluido'})
+        }
+    }catch(err) {
+        res.status(500).json({message: 'Erro ao Deletar Fabricantes no Banco de Dados'}) 
+    }
 })
 
 app.get('/fabricante', async (req,res)=>{
@@ -46,7 +53,16 @@ app.get('/fabricante', async (req,res)=>{
             res.status(200).json(pesq.marca)
         }
     }catch(err){
-        res.status(500).json({message: 'Erro ao consultar fabricantes do sistema'}) 
+        res.status(500).json({message: 'Erro ao consultar fabricantes no Banco de Dados'}) 
+    }
+})
+
+app.get('/fabricantes', async (req,res)=>{
+    try{
+        const pesq = await Fabricante.findAll()
+        res.status(200).json(pesq)
+    }catch(err){
+        res.status(500).json({message: 'Erro ao listar fabricantes do Banco de Dados'}) 
     }
 })
 
@@ -56,8 +72,14 @@ app.post('/fabricante', async (req,res)=>{
         const pesq = await Fabricante.create(data, {raw:true})
         res.status(201).json(pesq)
     }catch(err){
-        res.status(500).json({message: 'Erro ao adicionar fabricante ao sistema'})
+        res.status(500).json({message: 'Erro ao adicionar fabricante ao Banco de Dados'})
     }
+})
+
+app.put('/fabricante', async (req,res)=>{
+    const data = req.body
+    const pesq = await Fabricante.findByPk(data.codFabricante, {raw:true})
+    res.status(200).json({message: "dados recebidos"})
 })
 
 app.get('/', (req,res)=>{
